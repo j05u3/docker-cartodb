@@ -86,6 +86,26 @@ apt-get install -q -y nodejs
 RUN apt-get install -q -y libpixman-1-0 libpixman-1-dev
 RUN apt-get install -q -y libcairo2-dev libjpeg-dev libgif-dev libpango1.0-dev
 
+#Ruby
+RUN apt-get install -q -y wget &&\
+wget -O ruby-install-0.5.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz &&\
+tar -xzvf ruby-install-0.5.0.tar.gz &&\
+cd ruby-install-0.5.0/ &&\
+make install
+
+RUN apt-get -q -y install libreadline6-dev openssl &&\
+ruby-install ruby 2.2.3
+
+ENV PATH=$PATH:/opt/rubies/ruby-2.2.3/bin
+
+RUN gem install bundler &&\
+gem install compass
+
+ENV RAILS_ENV production
+
+RUN apt-get install -q -y python-all-dev &&\
+apt-get install -q -y imagemagick unp zip
+
 # Crankshaft: CARTO Spatial Analysis extension for PostgreSQL
 RUN cd / && \
     git clone https://github.com/CartoDB/crankshaft.git && \
@@ -111,23 +131,6 @@ ADD ./template_postgis.sh /tmp/template_postgis.sh
 RUN service postgresql start && /bin/su postgres -c \
       /tmp/template_postgis.sh && service postgresql stop
 
-#Ruby
-RUN apt-get install -q -y wget &&\
-wget -O ruby-install-0.5.0.tar.gz https://github.com/postmodern/ruby-install/archive/v0.5.0.tar.gz &&\
-tar -xzvf ruby-install-0.5.0.tar.gz &&\
-cd ruby-install-0.5.0/ &&\
-make install
-
-RUN apt-get -q -y install libreadline6-dev openssl &&\
-ruby-install ruby 2.2.3 
-
-ENV PATH=$PATH:/opt/rubies/ruby-2.2.3/bin 
-
-RUN gem install bundler &&\
-gem install compass
-
-ENV RAILS_ENV production
-
 ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
 
 #Carto Editor
@@ -136,9 +139,6 @@ cd cartodb &&\
 git checkout master && \
 wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
 python /tmp/get-pip.py 
-
-RUN apt-get install -q -y python-all-dev &&\
-apt-get install -q -y imagemagick unp zip 
 
 RUN cd cartodb &&\
 cd lib/sql && \
