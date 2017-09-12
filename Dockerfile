@@ -107,7 +107,7 @@ RUN apt-get install -q -y python-all-dev &&\
 apt-get install -q -y imagemagick unp zip
 
 RUN wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
-    python /tmp/get-pip.py 
+    python /tmp/get-pip.py
 
 # Crankshaft: CARTO Spatial Analysis extension for PostgreSQL
 RUN cd / && \
