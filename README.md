@@ -27,8 +27,14 @@ git clone https://github.com/chriswhong/docker-cartodb.git
 docker build -t="cartodb" docker-cartodb/
 ```
 ### Run the Container
+Create a data container to ease using the same volumes
+```
+docker create --name cartodata cartodb
+```
+
+Then use this command to run 
 This command runs the container with the three main services mapped to the host machine.  `3000` for the frontend, `8080` for the Windshaft Map Tiler (Maps API), and `8181` for the SQL API.
-Use `docker run -d -p 3000:3000 -p 8080:8080 -p 8181:8181 cartodb` the first time you run it.
+Use `docker run --volumes-from cartodata -d -p 3000:3000 -p 8080:8080 -p 8181:8181 cartodb` to run it.
 
 If you are replacing an existing container built with this image, add the `--volumes from` flag like `docker run --volumes-from {id of old container} -d -p 3001:3000 -p 8081:8080 -p 8182:8181 cartodb`  
 
