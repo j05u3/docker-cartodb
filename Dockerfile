@@ -197,9 +197,8 @@ ADD ./geocoder_server.sql /cartodb/script/geocoder_server.sql
 
 RUN service postgresql start && service redis-server start && \
 	bash -l -c "cd /cartodb && bash script/create_user && bash script/geocoder.sh" && \
+	psql -U postgres -d carto_db_production -c "UPDATE users SET private_maps_enabled = 't';" && \
 	service postgresql stop && service redis-server stop
-
-RUN psql -U postgres -d carto_db_production -c "UPDATE users SET private_maps_enabled = 't';"
 
 EXPOSE 3000 8080 8181
 
