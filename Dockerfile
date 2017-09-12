@@ -199,6 +199,8 @@ RUN service postgresql start && service redis-server start && \
 	bash -l -c "cd /cartodb && bash script/create_user && bash script/geocoder.sh" && \
 	service postgresql stop && service redis-server stop
 
+RUN psql -U postgres -d carto_db_production -c "UPDATE users SET private_maps_enabled = 't';"
+
 EXPOSE 3000 8080 8181
 
 ENV GDAL_DATA /usr/share/gdal/2.1
