@@ -106,6 +106,9 @@ ENV RAILS_ENV production
 RUN apt-get install -q -y python-all-dev &&\
 apt-get install -q -y imagemagick unp zip
 
+RUN wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
+    python /tmp/get-pip.py 
+
 # Crankshaft: CARTO Spatial Analysis extension for PostgreSQL
 RUN cd / && \
     git clone https://github.com/CartoDB/crankshaft.git && \
@@ -137,10 +140,6 @@ ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
 RUN git clone --recursive https://github.com/CartoDB/cartodb.git &&\
 cd cartodb &&\
 git checkout master && \
-wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
-python /tmp/get-pip.py 
-
-RUN cd cartodb &&\
 cd lib/sql && \
 PGUSER=postgres make install && \
 service postgresql start && /bin/su postgres -c \
