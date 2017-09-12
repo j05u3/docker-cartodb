@@ -114,7 +114,7 @@ RUN cd / && \
     git clone https://github.com/CartoDB/crankshaft.git && \
     cd /crankshaft && \
     git checkout master && \
-    make install && \
+    make deploy && \
     cd ..
 
 #SQL API
