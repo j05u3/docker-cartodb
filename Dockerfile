@@ -47,7 +47,6 @@ RUN sed -i 's/\(peer\|md5\)/trust/' /etc/postgresql/9.5/main/pg_hba.conf
 
 #create users
 RUN service postgresql start && \
-createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
 createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
 service postgresql stop
 
