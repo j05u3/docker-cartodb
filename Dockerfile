@@ -39,7 +39,8 @@ RUN apt-get install -q -y libpq5 \
 RUN apt-get install -q -y postgresql-9.5 \
                      postgresql-contrib-9.5 \
                      postgresql-server-dev-9.5 \
-                     postgresql-plpython-9.5
+                     postgresql-plpython-9.5 \
+                     postgresql-9.5-plproxy
 
 #PostgreSQL Config
 RUN sed -i 's/\(peer\|md5\)/trust/' /etc/postgresql/9.5/main/pg_hba.conf 
@@ -69,10 +70,15 @@ apt-get install -q -y liblwgeom-2.2.2 postgis postgresql-9.5-postgis-2.2 postgre
 
 #postgis setup
 RUN service postgresql start && \
-  createdb -T template0 -O postgres -U postgres -E UTF8 template_postgis &&\
-  psql -U postgres template_postgis -c 'CREATE EXTENSION postgis;CREATE EXTENSION postgis_topology;' &&\
+  createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
+  createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
   ldconfig &&\
   service postgresql stop
+
+# Initialize template postgis db
+ADD ./template_postgis.sh /tmp/template_postgis.sh
+RUN service postgresql start && /bin/su postgres -c \
+      /tmp/template_postgis.sh && service postgresql stop
 
 #redis
 RUN add-apt-repository ppa:cartodb/redis && apt-get update
@@ -86,6 +92,14 @@ apt-get install -q -y nodejs
 
 RUN apt-get install -q -y libpixman-1-0 libpixman-1-dev
 RUN apt-get install -q -y libcairo2-dev libjpeg-dev libgif-dev libpango1.0-dev
+
+# Crankshaft: CARTO Spatial Analysis extension for PostgreSQL
+RUN cd / && \
+    git clone https://github.com/CartoDB/crankshaft.git && \
+    cd /crankshaft && \
+    git checkout master && \
+    make install && \
+    cd ..
 
 #SQL API
 RUN git clone git://github.com/CartoDB/CartoDB-SQL-API.git &&\
@@ -116,9 +130,12 @@ gem install compass
 
 ENV RAILS_ENV production
 
+ADD ./cartodb_pgsql.sh /tmp/cartodb_pgsql.sh
+
 #Carto Editor
 RUN git clone --recursive https://github.com/CartoDB/cartodb.git &&\
 cd cartodb &&\
+git checkout master && \
 wget  -O /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py &&\
 python /tmp/get-pip.py 
 
@@ -126,6 +143,11 @@ RUN apt-get install -q -y python-all-dev &&\
 apt-get install -q -y imagemagick unp zip 
 
 RUN cd cartodb &&\
+cd lib/sql && \
+PGUSER=postgres make install && \
+service postgresql start && /bin/su postgres -c \
+  /tmp/cartodb_pgsql.sh && service postgresql stop && \
+cd - && \
 bundle install &&\
 npm install 
 
@@ -154,7 +176,17 @@ ENV LC_ALL en_US.UTF-8
 RUN cd cartodb &&\
     export PATH=$PATH:$PWD/node_modules/grunt-cli/bin &&\
     bundle install &&\
-    bundle exec grunt --environment production
+    bundle exec grunt --environment=production
+
+# Geocoder SQL client + server
+RUN git clone https://github.com/CartoDB/data-services.git && \
+  cd /data-services/geocoder/extension && PGUSER=postgres make all install && cd / && \
+  git clone https://github.com/CartoDB/dataservices-api.git && \
+  cd /dataservices-api/server/extension && \
+  PGUSER=postgres make install && \
+  cd ../lib/python/cartodb_services && \
+  pip install -r requirements.txt && pip install . && \
+  cd ../../../../client && PGUSER=postgres make install
 
 RUN service postgresql start && service redis-server start &&\
     cd cartodb &&\
@@ -162,10 +194,12 @@ RUN service postgresql start && service redis-server start &&\
     bundle exec rake db:migrate &&\
     service postgresql stop && service redis-server stop
 
-
 ADD ./create_user /cartodb/script/create_user
+ADD ./geocoder.sh /cartodb/script/geocoder.sh
+ADD ./geocoder_server.sql /cartodb/script/geocoder_server.sql
+
 RUN service postgresql start && service redis-server start && \
-	bash -l -c "cd /cartodb && bash script/create_user" && \
+	bash -l -c "cd /cartodb && bash script/create_user && bash script/geocoder.sh" && \
 	service postgresql stop && service redis-server stop
 
 EXPOSE 3000 8080 8181

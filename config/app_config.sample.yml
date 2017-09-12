@@ -162,6 +162,7 @@ defaults: &defaults
       bucket_name: ''
       url_ttl: 7200
       async_long_uploads: false
+      s3_endpoint: ''
     uploads_path: 'public/uploads' # including 'uploads' assumes public path. Absolute path example: /tmp/exports/downloads
   importer:
     blacklisted_ip_addr: []
@@ -178,6 +179,7 @@ defaults: &defaults
       async_long_uploads: false
       proxy_uri:
       use_ssl: True
+      s3_endpoint: ''
 
     unp_temporal_folder: '/tmp/imports/'
     # It must end in `/uploads` and be accessible via HTTP, if relative will default to Rails.Root/#{uploads_path}
@@ -235,7 +237,8 @@ defaults: &defaults
     s3_bucket_name: "tests"
     max_file_size: 5242880 # 5.megabytes
   app_assets:
-    asset_host: "//cartodb-libs.global.ssl.fastly.net/cartodbui"
+    # asset_host: "//cartodb-libs.global.ssl.fastly.net/cartodbui"
+    asset_host: "//yourdomain.com"
   avatars:
     gravatar_enabled: true
     base_url: '//cartodb-libs.global.ssl.fastly.net/cartodbui/assets/unversioned/images/avatars'
@@ -316,6 +319,9 @@ defaults: &defaults
             ratelimit_concurrency:  3
             ratelimit_ttl:          4
             ratelimit_wait_secs:    0.1
+  datasources:
+    arcgis_enabled: false
+    salesforce_enabled: false
   basemaps:
     Nokia:
       normal_day:
@@ -495,6 +501,29 @@ defaults: &defaults
     min_rows: 2000000
     statement_timeout: 1800000
     tolerance_px: 1.0
+  connectors:
+    odbc:
+      enabled: false
+      max_rows: nil
+    mysql:
+      enabled: true
+      max_rows: 500000
+    postgresql:
+      enabled: true
+      max_rows: 500000
+    hive:
+      enabled: false
+      max_rows: 500000
+    sqlserver:
+      enabled: false
+      max_rows: 500000
+  dataservices:
+    enabled:
+        geocoder_internal: true
+        hires_geocoder: false
+        isolines: false
+        routing: false
+        data_observatory: true
 
 development:
   <<: *defaults

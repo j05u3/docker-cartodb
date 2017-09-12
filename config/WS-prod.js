@@ -34,8 +34,8 @@ var config = {
     //  3. {{=it.port}}: will use the `port` from this very same configuration file.
     //,serverMetadata : { cdn_url : {http: '127.0.0.1', https: '127.0.0.1'}}
     ,resources_url_templates: {
-        http: 'http://cartodb.localhost:{{=it.port}}/user/{{=it.user}}/api/v1/map',
-        https: 'https://localhost.lan:user/{{=it.user}}/api/v1/map'
+        http: 'http://yourdomain.com/user/{{=it.user}}/api/v1/map',
+        https: 'https://yourdomain.com/user/{{=it.user}}/api/v1/map'
     }
     // Maximum number of connections for one process
     // 128 is a good value with a limit of 1024 open file descriptors
@@ -109,6 +109,10 @@ var config = {
           // See https://github.com/CartoDB/Windshaft/blob/master/lib/windshaft/renderers/renderer_factory.js
           // Important: check the configuration of uv_threadpool_size to use suitable value
           poolSize: 8,
+
+          // Whether grainstore will use a child process or not to transform CartoCSS into Mapnik XML.
+          // This will prevent blocking the main thread.
+          useCartocssWorkers: true,
 
           // Metatile is the number of tiles-per-side that are going
           // to be rendered at once. If all of them will be requested
