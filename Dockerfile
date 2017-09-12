@@ -73,11 +73,6 @@ RUN service postgresql start && \
   ldconfig &&\
   service postgresql stop
 
-# Initialize template postgis db
-ADD ./template_postgis.sh /tmp/template_postgis.sh
-RUN service postgresql start && /bin/su postgres -c \
-      /tmp/template_postgis.sh && service postgresql stop
-
 #redis
 RUN add-apt-repository ppa:cartodb/redis && apt-get update
 
@@ -110,6 +105,11 @@ RUN git clone git://github.com/CartoDB/Windshaft-cartodb.git &&\
 cd Windshaft-cartodb &&\
 git checkout master &&\
 npm install
+
+# Initialize template postgis db
+ADD ./template_postgis.sh /tmp/template_postgis.sh
+RUN service postgresql start && /bin/su postgres -c \
+      /tmp/template_postgis.sh && service postgresql stop
 
 #Ruby
 RUN apt-get install -q -y wget &&\
