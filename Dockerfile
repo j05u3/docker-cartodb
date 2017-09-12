@@ -47,6 +47,7 @@ RUN sed -i 's/\(peer\|md5\)/trust/' /etc/postgresql/9.5/main/pg_hba.conf
 
 #create users
 RUN service postgresql start && \
+createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
 createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
 service postgresql stop
 
@@ -69,8 +70,6 @@ apt-get install -q -y liblwgeom-2.2.2 postgis postgresql-9.5-postgis-2.2 postgre
 
 #postgis setup
 RUN service postgresql start && \
-  createuser publicuser --no-createrole --no-createdb --no-superuser -U postgres && \
-  createuser tileuser --no-createrole --no-createdb --no-superuser -U postgres && \
   ldconfig &&\
   service postgresql stop
 
