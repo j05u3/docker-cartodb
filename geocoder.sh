@@ -21,5 +21,5 @@ USER_DB=`echo "SELECT database_name FROM users WHERE username='admin'" | psql -U
 echo "CREATE EXTENSION cdb_dataservices_client;" | psql -U postgres $USER_DB
 echo "SELECT CDB_Conf_SetConf('user_config', '{"'"is_organization"'": false, "'"entity_name"'": "'"admin"'"}');" | psql -U postgres $USER_DB
 echo -e "SELECT CDB_Conf_SetConf('geocoder_server_config', '{ \"connection_str\": \"host=localhost port=5432 dbname=${GEOCODER_DB# } user=postgres\"}');" | psql -U postgres $USER_DB
-bundle exec rake cartodb:services:set_user_quota['dev',geocoding,100000]
+bundle exec rake cartodb:services:set_user_quota['admin',geocoding,100000]
 
